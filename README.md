@@ -9,7 +9,13 @@ To learn how to write DAGs and Operators read about [core concepts](https://airf
 
 # Examples
 
-TODO
+Simple working DAGs taken from Airflow documentation:
+
+* [`bash_commands.py`](examples/bash_commands.py) - Use of `BashOperator` and simple layout.
+* [`task_decorator.py`](examples/task_decorator.py) - More complex layout with `DummyOperator`.
+* [`taskflow_api.py`](examples/taskflow_api.py) - `SimpleHttpOperator` and `EmailOperator`.
+
+These were researched in [infra-bi#1](https://github.com/status-im/infra-bi/issues/1). More examples are always welcome.
 
 # Continuous Integration
 
