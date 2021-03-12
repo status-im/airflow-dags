@@ -25,8 +25,13 @@ with DAG(
     # https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#catchup
     catchup=False
 ) as dag:
-  # Using default connection as it's set to httpbin.org by default
-  get_ip = SimpleHttpOperator(task_id='get_ip', endpoint='get', method='GET')
+  # Assumes existence of http_default Connection which calls https://httpbin.org/
+  get_ip = SimpleHttpOperator(
+      task_id='get_ip',
+      http_conn_id='http_default',
+      endpoint='get',
+      method='GET'
+  )
 
   @dag.task(multiple_outputs=True)
   def prepare_email(raw_json: str):
