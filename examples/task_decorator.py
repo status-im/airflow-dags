@@ -23,4 +23,4 @@ with DAG(
     task_mid_3 = DummyOperator(task_id='task_mid_3')
     task_end = DummyOperator(task_id='task_end')
     # Define dependencies
-    task_start >> [task_mid_2, task_mid_3, task_mid_4] >> task_end
+    task_start >> [task_mid_1, task_mid_2, task_mid_3] >> task_end
