@@ -2,8 +2,8 @@
 
 This repo contains implementations of Airflow workflows and tasks called respectively [DAGs](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#dags) and [Operators](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#operators).
 
-* DAGs - Direct Acyclic Graphs - Python scripts defining workflows in a way that reflects their relationships and dependencies.
-* Operators - Functions within these python scripts which define the individual tasks that are executed as part of a DAG run.
+* DAGs - Direct Acyclic Graphs - Python scripts defining workflows in a way that reflects their relationships.
+* Operators - Python functions which define the individual tasks that are executed as part of a DAG run.
 
 To learn how to write DAGs and Operators read about [core concepts](https://airflow.apache.org/docs/apache-airflow/stable/concepts.html#concepts) and follow the [official tutorial](https://airflow.apache.org/docs/apache-airflow/stable/tutorial.html).
 
@@ -19,7 +19,7 @@ These were researched in [infra-bi#1](https://github.com/status-im/infra-bi/issu
 
 # Continuous Integration
 
-TODO
+Changes pushed to `master` are automatically fetched to our Airflow instance by the [`airflow-webhook`](https://github.com/status-im/infra-bi/tree/master/ansible/roles/airflow-webhook) service.
 
 # Infrastructure
 
