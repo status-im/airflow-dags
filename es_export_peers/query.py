@@ -1,5 +1,4 @@
 import hashlib
-import logging as LOG
 from elasticsearch import Elasticsearch
 
 
