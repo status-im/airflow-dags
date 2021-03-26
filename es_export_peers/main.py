@@ -17,6 +17,7 @@ sys.path.append(path.dirname(path.realpath(__file__)))
 from query import ESQueryPeers
 from postgres import PGDatabase
 
+# These are applied to all Operators via `kwargs["dag"]`:
 DEFAULT_ARGS = {
     'owner': 'jakubgs',
     'depends_on_past': False,
@@ -28,16 +29,28 @@ DEFAULT_ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
+# These are passed to all Operators via `kwargs['dag_run'].conf`:
+DEFAULT_PARAMS = {
+    'index_pattern': 'logstash-202*',
+    'field_name': 'peer_id',
+    'fleet_name': 'eth.prod',
+    'program': 'docker/statusd-whisper-node',
+}
+
+# Main definition of the DAG, needs to be global.
 dag = DAG(
     'es_export_peers',
+    schedule_interval='@daily',
     default_args=DEFAULT_ARGS,
-    schedule_interval='@daily'
+    params=DEFAULT_PARAMS
 )
 
 
-def export_peers(index_pattern, field, fleet, program):
-    # Uncomment to run with `airflow test` and debug.
-    #from IPython import embed; embed()
+def export_peers(**kwargs):
+    LOG.info(kwargs)
+    # This passes arguments given via Web UI when triggering a DAG.
+    conf = kwargs['dag_run'].conf
+
     esq = ESQueryPeers(
         Variable.get('es_log_cluster_addr'),
         Variable.get('es_log_cluster_port'),
@@ -55,7 +68,7 @@ def export_peers(index_pattern, field, fleet, program):
 
     LOG.info('Querying ES cluster for peers...')
     peers = []
-    for index in esq.get_indices(index_pattern):
+    for index in esq.get_indices(conf['index_pattern']):
         # skip already injected indices
         if index in present_indices:
             LOG.debug('Skipping existing index: %s', index)
@@ -67,9 +80,9 @@ def export_peers(index_pattern, field, fleet, program):
         LOG.info('Index: %s', index)
         rval = esq.get_peers(
             index=index,
-            field=field,
-            fleet=fleet,
-            program=program,
+            field=conf['field_name'],
+            fleet=conf['fleet_name'],
+            program=conf['program'],
         )
         if len(rval) == 0:
             LOG.warning('No entries found!')
@@ -86,11 +99,5 @@ def export_peers(index_pattern, field, fleet, program):
 export_peers = PythonOperator(
     task_id='export_peers',
     python_callable=export_peers,
-    op_kwargs={
-        'index_pattern': 'logstash-202*',
-        'field': 'peer_id',
-        'fleet': 'eth.prod',
-        'program': 'docker/statusd-whisper-node',
-    },
     dag=dag
 )
