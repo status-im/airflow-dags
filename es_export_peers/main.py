@@ -93,6 +93,10 @@ def query_peers(indices: list):
         LOG.info('%s - Found: %s', index_name, len(rval))
         peers.extend(rval)
 
+    return peers
+
+@task
+def inject_peers(peers: list):
     if len(peers) == 0:
         LOG.warning('Nothing to insert into database.')
         return
@@ -104,6 +108,6 @@ def query_peers(indices: list):
 # Main definition of the DAG, needs to be global.
 @dag('es_export_peers', schedule_interval='@daily', default_args=ARGS, params=PARAMS)
 def es_export_peers():
-    query_peers(query_indices())
+    inject_peers(query_peers(query_indices()))
 
 dag = es_export_peers()
