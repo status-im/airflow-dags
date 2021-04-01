@@ -39,13 +39,7 @@ esq = ESQueryPeers(
     Variable.get('es_log_cluster_port'),
 )
 # Citus PostgreSQL Database
-psg = PGDatabase(
-    Variable.get('citus_db_name'),
-    Variable.get('citus_db_user'),
-    Variable.get('citus_db_pass'),
-    Variable.get('citus_db_host'),
-    Variable.get('citus_db_port')
-)
+psg = PGDatabase(conn_id='citus_db_peers')
 
 @task
 def query_indices(**kwargs):

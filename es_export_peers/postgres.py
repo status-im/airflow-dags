@@ -1,18 +1,13 @@
-import psycopg2
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 class PGDatabase:
     _SCHEMA = """
        CREATE TABLE IF NOT EXISTS peers (date date, peer varchar(64), count int);
     """
 
-    def __init__(self, name, user, password=None, host='localhost', port=5432):
-        self.db = psycopg2.connect(
-            user = user,
-            password = password,
-            host = host,
-            port = port,
-            database = name
-        )
+    def __init__(self, conn_id='citus_db_peers'):
+        self.hook = PostgresHook(postgres_conn_id=conn_id)
+        self.db = self.hook.get_conn()
         self.c = self.db.cursor()
         self._create_schema()
 
