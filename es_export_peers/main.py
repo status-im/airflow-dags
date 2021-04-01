@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from airflow.models import Variable
 from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
+from airflow.providers.elasticsearch.hooks.elasticsearch import ElasticsearchHook
 
 # HACK: Fix for loading relative modules.
 sys.path.append(path.dirname(path.realpath(__file__)))
@@ -34,10 +35,7 @@ PARAMS = {
 }
 
 # ElasticSearch Logs Cluster
-esq = ESQueryPeers(
-    Variable.get('es_log_cluster_addr'),
-    Variable.get('es_log_cluster_port'),
-)
+esq = ESQueryPeers(conn_id='es_logs_cluster')
 # Citus PostgreSQL Database
 psg = PGDatabase(conn_id='citus_db_peers')
 

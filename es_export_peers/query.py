@@ -1,5 +1,5 @@
 import hashlib
-from elasticsearch import Elasticsearch
+from airflow.providers.elasticsearch.hooks.elasticsearch import ElasticsearchHook
 
 
 def remove_prefix(text, prefix):
@@ -19,14 +19,10 @@ class Peer:
         return (self.date, self.peer, self.count)
 
 class ESQueryPeers():
-    def __init__(self, host='localhost', port=9200, timeout=1200):
-        self.client = Elasticsearch([{
-            'host': host,
-            'port': port,
-        }],
-                                    timeout=timeout,
-                                    retry_on_timeout=True)
-        self.cluster = self.client.info().get('cluster_name')
+    def __init__(self, conn_id='es_logs_cluster'):
+        self.hook = ElasticsearchHook(elasticsearch_conn_id=conn_id)
+        self.conn = self.hook.get_conn()
+        self.client = self.conn.es
 
     def get_indices(self, pattern='logstash-*'):
         return self.client.indices.get(index=pattern).keys()
