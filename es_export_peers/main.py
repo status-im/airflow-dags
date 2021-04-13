@@ -18,7 +18,7 @@ from postgres import PGDatabase
 ARGS = {
     'owner': 'jakubgs',
     'depends_on_past': False,
-    'start_date': datetime(2021, 3, 26),
+    'start_date': datetime(2021, 4, 13),
     'email': ['jakub@status.im'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -26,7 +26,7 @@ ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
-# These are passed to all Operators via `kwargs['dag_run'].conf`:
+# These are passed to all Operators via `get_current_context()['params']`:
 PARAMS = {
     'index_pattern': 'logstash-202*',
     'field_name': 'peer_id',
@@ -39,17 +39,18 @@ esq = ESQueryPeers(conn_id='es_logs_cluster')
 # Citus PostgreSQL Database
 psg = PGDatabase(conn_id='citus_db_peers')
 
+
 @task
 def query_indices(**kwargs):
     # This passes arguments given via Web UI when triggering a DAG.
-    conf = get_current_context()['dag_run'].conf
+    params = get_current_context()['params']
 
     days = psg.get_present_days()
     present_indices = [('logstash-%s' % d.replace('-', '.')) for d in days]
 
     LOG.info('Querying ES cluster for peers...')
     indices_to_query = []
-    for index_name in esq.get_indices(conf['index_pattern']):
+    for index_name in esq.get_indices(params['index_pattern']):
         LOG.debug('Found Index: %s', index_name)
 
         # skip already injected indices
@@ -68,15 +69,15 @@ def query_indices(**kwargs):
 @task
 def query_peers(indices: list):
     # This passes arguments given via Web UI when triggering a DAG.
-    conf = get_current_context()['dag_run'].conf
+    params = get_current_context()['params']
 
     peers = []
     for index_name in indices:
         rval = esq.get_peers(
             index=index_name,
-            field=conf['field_name'],
-            fleet=conf['fleet_name'],
-            program=conf['program'],
+            field=params['field_name'],
+            fleet=params['fleet_name'],
+            program=params['program'],
         )
         if len(rval) == 0:
             LOG.warning('%s - No entries found!', index_name)
