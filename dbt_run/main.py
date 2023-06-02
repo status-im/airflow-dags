@@ -35,4 +35,14 @@ with DAG('docker_dag', default_args=ARGS, schedule_interval="5 * * * *", catchup
     docker_url="unix://var/run/docker.sock",
     network_mode="bridge"
     )
-    t1 >> t2 
+    t3 =  DockerOperator(
+	task_id = 'run_dbt',
+	image = 'dbt:test',
+	network_mode='host',
+	volumes=['/docker/dbt-core/project/status-im/dbt-models:/usr/app', '/docker/dbt-core/profile:/root/.dbt'],
+	command='run',
+	docker_url="unix://var/run/docker.sock",
+	auto_remove=False,
+    )
+    t1 >> t2  >> t3
+
