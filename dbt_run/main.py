@@ -24,7 +24,7 @@ ARGS = {
 with DAG('dbt_execution', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
     task_test =  DockerOperator(
 	    task_id = 'dbt_test',
-    	image = 'dbt:test',
+    	image = 'dbt:latest',
 	    network_mode='host',
     	volumes=[
                     '/docker/dbt-core/project/status-im/dbt-models:/usr/app', 
@@ -36,7 +36,7 @@ with DAG('dbt_execution', default_args=ARGS, schedule_interval=None, catchup=Fal
     )
     task_run =  DockerOperator(
 	    task_id = 'dbt_run',
-    	image = 'dbt:test',
+    	image = 'dbt:latest',
 	    network_mode='host',
     	volumes=[
                     '/docker/dbt-core/project/status-im/dbt-models:/usr/app', 
