@@ -2,6 +2,8 @@ import sys
 import logging as LOG
 from os import path
 from datetime import datetime, timedelta
+import logging
+import sys
 
 from airflow import DAG
 from airflow.models import Variable
@@ -9,6 +11,8 @@ from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.operators.bash_operator import BashOperator
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 ARGS = { 
     'owner': 'apentori',
@@ -33,6 +37,7 @@ with DAG('dbt_execution', default_args=ARGS, schedule_interval=None, catchup=Fal
     	command='test',
 	    docker_url="unix://var/run/docker.sock",
     	auto_remove=False,
+        tty=True,
     )
     task_run =  DockerOperator(
 	    task_id = 'dbt_run',
@@ -45,6 +50,7 @@ with DAG('dbt_execution', default_args=ARGS, schedule_interval=None, catchup=Fal
     	command='run',
 	    docker_url="unix://var/run/docker.sock",
     	auto_remove=False,
+        tty=True,
     )
     task_test >> task_run
 
