@@ -11,6 +11,7 @@ from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.operators.bash_operator import BashOperator
+from docker.types import Mount
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -30,9 +31,9 @@ with DAG('dbt_execution', default_args=ARGS, schedule_interval=None, catchup=Fal
 	    task_id = 'dbt_test',
     	image = 'dbt:latest',
 	    network_mode='host',
-    	volumes=[
-                    '/docker/dbt-core/project/status-im/dbt-models:/usr/app', 
-                    '/docker/dbt-core/profile:/root/.dbt'
+    	mounts=[
+                    Mount(source="/docker/dbt-core/project/status-im/dbt-models", target="/usr/app", type="bind"), 
+                    Mount(source="/docker/dbt-core/profile", target="/root/.dbt",type="bind")
                 ],
     	command='test',
 	    docker_url="unix://var/run/docker.sock",
@@ -43,11 +44,11 @@ with DAG('dbt_execution', default_args=ARGS, schedule_interval=None, catchup=Fal
 	    task_id = 'dbt_run',
     	image = 'dbt:latest',
 	    network_mode='host',
-    	volumes=[
-                    '/docker/dbt-core/project/status-im/dbt-models:/usr/app', 
-                    '/docker/dbt-core/profile:/root/.dbt'
-                ],
-    	command='run',
+  		mounts=[
+                    Mount(source="/docker/dbt-core/project/status-im/dbt-models", target="/usr/app", type="bind"), 
+                    Mount(source="/docker/dbt-core/profile", target="/root/.dbt",type="bind")
+              ],
+        command='run',
 	    docker_url="unix://var/run/docker.sock",
     	auto_remove=False,
         tty=True,
