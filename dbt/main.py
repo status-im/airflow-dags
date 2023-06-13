@@ -26,17 +26,32 @@ ARGS = {
 
 with DAG('dbt_dremio', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
 
-    task_debug = BashOperator(
+    task_dremio_debug = BashOperator(
             task_id = 'dbt_dremio_debug',
-            bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/'
+            bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_dremio'
             )
-    task_test= BashOperator(
+    task_dremio_test= BashOperator(
             task_id = 'dbt_dremio_test',
-            bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/'
+            bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_dremio'
             )
-    task_run = BashOperator(
+    task_dremio_run = BashOperator(
             task_id='dbt_dremio_run',
-            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/'
+            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_dremio'
             )
-    task_debug >> task_test >> task_run
+    task_dremio_debug >> task_dremio_test >> task_dremio_run
 
+with DAG('dbt_postgres', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
+
+    task_postgres_debug = BashOperator(
+            task_id = 'dbt_postgres_debug',
+            bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            )
+    task_postgres_test= BashOperator(
+            task_id = 'dbt_postgres_test',
+            bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            )
+    task_postgres_run = BashOperator(
+            task_id='dbt_postgres_run',
+            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            )
+    task_postgres_debug >> task_postgres_test >> task_postgres_run
