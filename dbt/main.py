@@ -54,4 +54,5 @@ with DAG('dbt_postgres', default_args=ARGS, schedule_interval=None, catchup=Fals
             task_id='dbt_postgres_run',
             bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
             )
+
     task_postgres_debug >> task_postgres_test >> task_postgres_run
