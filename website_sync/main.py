@@ -39,7 +39,7 @@ AIRB_JOB_HASURA_ID="ea19a8d9-d396-4c0b-888d-6c4267c3a977"
 
 with DAG('github_website_sync', 
             default_args=ARGS, 
-            schedule_interval='*/5 * * * *',
+            schedule_interval='*/20 * * * *',
             catchup=False) as dag:
 
 
