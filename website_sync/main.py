@@ -118,7 +118,7 @@ with DAG('github_website_sync',
 # Launch DBT transformation on the data previously fetched
     dbt_transform = BashOperator(
             task_id='dbt_postgres_run',
-            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            bash_command='dbt run --profiles-dir /docker/airflow/dbt --project-dir /dbt/status-im/dbt-models/'
     )
     dbt_transform.doc_md = """\
             ## DBT transform
