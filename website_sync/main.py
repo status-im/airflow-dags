@@ -42,13 +42,12 @@ with DAG('github_website_sync',
             schedule_interval='*/20 * * * *',
             catchup=False) as dag:
 
-
     get_workflow_id = SimpleHttpOperator(
         task_id='get_workflow_id',
         http_conn_id='airbyte_conn_example',
         endpoint='/api/v1/workspaces/list',
         method="POST",
-        headers={"Content-type": "application/json"},
+        headers={"Content-type": "application/json", "timeout": "1200"},
         response_filter=lambda response: response.json()["workspaces"][0]["workspaceId"],
     )
     get_workflow_id.doc_md = """\
@@ -64,7 +63,7 @@ with DAG('github_website_sync',
         http_conn_id='airbyte_conn_example',
         endpoint='/api/v1/connections/list',
         method="POST",
-        headers={"Content-type": "application/json"},
+        headers={"Content-type": "application/json", "timeout": "1200"},
         data=json.dumps(
             {"workspaceId": f"{get_workflow_id.output}"}
             ),
@@ -104,7 +103,7 @@ with DAG('github_website_sync',
         airbyte_conn_id='airbyte_conn_example',
         connection_id=connections_id['github'],
         asynchronous=False,
-        timeout=3600,
+        timeout='3600',
         wait_seconds=3
     )
     airbyte_fetch_github.doc_md = """\
@@ -132,7 +131,7 @@ with DAG('github_website_sync',
         airbyte_conn_id='airbyte_conn_example',
         connection_id=connections_id['hasura'],
         asynchronous=False,
-        timeout=3600,
+        timeout='3600',
         wait_seconds=3
     )
     airbyte_sync_hasura.doc_md = """\
