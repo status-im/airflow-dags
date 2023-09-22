@@ -98,14 +98,17 @@ with DAG('github_website_sync',
             """
 
 # Trigger Airbyte fetch Data from Github
-    airbyte_fetch_github = AirbyteTriggerSyncOperator(
+    airbyte_fetch_github = SimpleHttpOperator(
         task_id='airbyte_fetch_github',
-        airbyte_conn_id='airbyte_conn_example',
-        connection_id=connections_id['github'],
-        asynchronous=False,
-        timeout='3600',
-        wait_seconds=3
+        http_conn_id='airbyte_conn_example',
+        endpoint='/api/v1/connections/sync',
+        method="POST",
+        headers={"Content-type": "application/json", "timeout": "1200"},
+        data=json.dumps(
+            {"connectionId": f"{connections_id['github']}"}
+            )
     )
+
     airbyte_fetch_github.doc_md = """\
             ## Airbyte Fetch in Github
             
@@ -126,14 +129,17 @@ with DAG('github_website_sync',
             """
 
 # Trigger Airbyte Sync from main database to Hasura
-    airbyte_sync_hasura = AirbyteTriggerSyncOperator(
+    airbyte_sync_hasura = SimpleHttpOperator(
         task_id='airbyte_sync_hasura',
-        airbyte_conn_id='airbyte_conn_example',
-        connection_id=connections_id['hasura'],
-        asynchronous=False,
-        timeout='3600',
-        wait_seconds=3
+        http_conn_id='airbyte_conn_example',
+        endpoint='/api/v1/connections/sync',
+        method="POST",
+        headers={"Content-type": "application/json", "timeout": "1200"},
+        data=json.dumps(
+            {"connectionId": f"{connections_id['hasura']}"}
+            )
     )
+
     airbyte_sync_hasura.doc_md = """\
             ## Airbyte Sync Hasura
             
