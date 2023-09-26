@@ -77,16 +77,17 @@ with DAG('spiff_sync',
 
     @dag.task(task_id="extracts_conn_id", multiple_outputs=True)
     def extract_conn_id(output):
-        github_conn=list(filter(lambda x: x['name'] == 'extract_spiff_backend_mod_prod', output))
-        hasura_conn=list(filter(lambda x: x['name'] == 'extract_spiff_connector_mod_prod', output))
+        logging.info('Connection ID %s' % output)
+        backend_conn=list(filter(lambda x: x['name'] == 'extract_spiff_backend_mod_prod', output))
+        connector_conn=list(filter(lambda x: x['name'] == 'extract_spiff_connector_mod_prod', output))
         return { 
-                "extract_spiff_backend_mod_prod": f"{github_conn[0]['connectionId']}",
-                "extract_spiff_connector_mod_prod": f"{hasura_conn[0]['connectionId']}" 
+                "extract_spiff_backend_mod_prod": f"{backend_conn[0]['connectionId']}",
+                "extract_spiff_connector_mod_prod": f"{connector_conn[0]['connectionId']}" 
                }
         
     connections_id = extract_conn_id(get_connections.output)
     
-# Trigger Airbyte fetch Data from Github
+# Trigger Airbyte sync for Spiff Backend DB
     airbyte_sync_spiff_backend = SimpleHttpOperator(
         task_id='airbyte_sync_spiff_backend',
         http_conn_id='airbyte_conn',
@@ -98,7 +99,7 @@ with DAG('spiff_sync',
             )
     )
 
-# Trigger Airbyte Sync from main database to Hasura
+# Trigger Airbyte Sync for Spiff Connector DB
     airbyte_sync_spiff_connector = SimpleHttpOperator(
         task_id='airbyte_sync_spiff_connector',
         http_conn_id='airbyte_conn',
