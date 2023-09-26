@@ -24,22 +24,6 @@ ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
-with DAG('dbt_dremio', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
-
-    task_dremio_debug = BashOperator(
-            task_id = 'dbt_dremio_debug',
-            bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_dremio'
-            )
-    task_dremio_test= BashOperator(
-            task_id = 'dbt_dremio_test',
-            bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_dremio'
-            )
-    task_dremio_run = BashOperator(
-            task_id='dbt_dremio_run',
-            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_dremio'
-            )
-    task_dremio_debug >> task_dremio_test >> task_dremio_run
-
 with DAG('dbt_postgres', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
 
     task_postgres_debug = BashOperator(
