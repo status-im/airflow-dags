@@ -12,9 +12,7 @@ from airflow.models.param import Param
 from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
 from airflow.operators.bash_operator import BashOperator
-
 from airflow.utils.dates import days_ago
-from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
 from airflow.providers.http.operators.http import SimpleHttpOperator
 
 """
@@ -34,9 +32,6 @@ ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
-AIRB_JOB_GITHUB_ID="d1b8879d-c16e-4029-bf72-182b9db0df4b"
-AIRB_JOB_HASURA_ID="ea19a8d9-d396-4c0b-888d-6c4267c3a977"
-
 with DAG('github_website_sync', 
             default_args=ARGS, 
             schedule_interval='*/20 * * * *',
@@ -44,7 +39,7 @@ with DAG('github_website_sync',
 
     get_workflow_id = SimpleHttpOperator(
         task_id='get_workflow_id',
-        http_conn_id='airbyte_conn_example',
+        http_conn_id='airbyte_conn',
         endpoint='/api/v1/workspaces/list',
         method="POST",
         headers={"Content-type": "application/json", "timeout": "1200"},
@@ -120,7 +115,7 @@ with DAG('github_website_sync',
 # Launch DBT transformation on the data previously fetched
     dbt_transform = BashOperator(
             task_id='dbt_postgres_run',
-            bash_command='dbt run --profiles-dir /docker/airflow/dbt --project-dir /dbt/status-im/dbt-models/'
+            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/'
     )
     dbt_transform.doc_md = """\
             ## DBT transform
