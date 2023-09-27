@@ -28,15 +28,15 @@ with DAG('dbt_postgres', default_args=ARGS, schedule_interval=None, catchup=Fals
 
     task_postgres_debug = BashOperator(
             task_id = 'dbt_postgres_debug',
-            bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/dbt-models'
             )
     task_postgres_test= BashOperator(
             task_id = 'dbt_postgres_test',
-            bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/dbt-models'
             )
     task_postgres_run = BashOperator(
             task_id='dbt_postgres_run',
-            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/status-im/dbt-models/models_postgres'
+            bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models'
             )
 
     task_postgres_debug >> task_postgres_test >> task_postgres_run
