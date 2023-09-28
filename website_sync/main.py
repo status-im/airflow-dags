@@ -34,7 +34,7 @@ ARGS = {
 
 with DAG('github_website_sync', 
             default_args=ARGS, 
-            schedule_interval='*/20 * * * *',
+            schedule_interval='*/30 * * * *',
             catchup=False) as dag:
 
     get_workflow_id = SimpleHttpOperator(
