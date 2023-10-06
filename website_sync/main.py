@@ -75,8 +75,8 @@ with DAG('github_website_sync',
 
     @dag.task(task_id="extracts_conn_id", multiple_outputs=True)
     def extract_conn_id(output):
-        github_conn=list(filter(lambda x: x['name'] == 'Github-status-im-fetch', output))
-        hasura_conn=list(filter(lambda x: x['name'] == 'Load Hasura', output))
+        github_conn=list(filter(lambda x: x['name'] == 'gh_sync_website_repos', output))
+        hasura_conn=list(filter(lambda x: x['name'] == 'load_hasura_website', output))
         print(f'Github_conId={github_conn} \n Hasura_conn_Id={hasura_conn}')
         print(f'Github_conId={github_conn[0]["connectionId"]} \n Hasura_conn_Id={hasura_conn[0]["connectionId"]}')
         return { 
