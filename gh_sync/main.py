@@ -74,7 +74,6 @@ with DAG('gh_repos_sync',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['gh_logos'],
         asynchronous=False,
-        timeout=3600,
         wait_seconds=3
     )
 
