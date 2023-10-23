@@ -12,10 +12,15 @@ To learn how to write DAGs and Operators read about [core concepts](https://airf
 This repository contains: 
 
 * DAG to launch the Airbyte jobs for the status-website charts, in `website-sync`,
+* DAG to launch the Airbyte jobs for the github sync of the different repositories of the org.
 * DAG to run all the dbt model in `dbt`,
-* DAG to export Elastic Peers in `es_export_peers`,
+* DAG to sync data from spiff workflow.
 
-The DBT models run in some DAG are stored in [`dbt-models`](https://github.com/status-im/dbt-models).
+
+## Development
+
+Each new models can be test on the `test` environment of [infra-bi](https://github.com/status-im/infra-bi) by merging it into the `test` branch of this repo. Once the tests are conclusive, the `test` branch can me merge into the `prod` one.
+
 
 # Examples
 
