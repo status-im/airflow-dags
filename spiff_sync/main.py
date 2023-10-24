@@ -37,7 +37,7 @@ ARGS = {
 
 with DAG('spiff_sync', 
             default_args=ARGS, 
-            schedule_interval='* 1 * * *',
+            schedule_interval='0 /6 * * *',
             catchup=False) as dag:
 
     get_workflow_id = SimpleHttpOperator(

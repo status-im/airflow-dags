@@ -35,7 +35,7 @@ ARGS = {
 
 with DAG('gh_repos_sync',
          default_args=ARGS,
-         schedule_interval='6 * * * *',
+         schedule_interval='30 */6 * * *',
          catchup=False) as dag:
 
     get_workflow_id = SimpleHttpOperator(
