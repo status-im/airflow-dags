@@ -55,7 +55,7 @@ with DAG('github_website_sync',
 
     get_connections = SimpleHttpOperator(
         task_id='get_connections_id',
-        http_conn_id='airbyte_conn_example',
+        http_conn_id='airbyte_conn',
         endpoint='/api/v1/connections/list',
         method="POST",
         headers={"Content-type": "application/json", "timeout": "1200"},
@@ -95,7 +95,7 @@ with DAG('github_website_sync',
 # Trigger Airbyte fetch Data from Github
     airbyte_fetch_github = SimpleHttpOperator(
         task_id='airbyte_fetch_github',
-        http_conn_id='airbyte_conn_example',
+        http_conn_id='airbyte_conn',
         endpoint='/api/v1/connections/sync',
         method="POST",
         headers={"Content-type": "application/json", "timeout": "1200"},
@@ -126,7 +126,7 @@ with DAG('github_website_sync',
 # Trigger Airbyte Sync from main database to Hasura
     airbyte_sync_hasura = SimpleHttpOperator(
         task_id='airbyte_sync_hasura',
-        http_conn_id='airbyte_conn_example',
+        http_conn_id='airbyte_conn',
         endpoint='/api/v1/connections/sync',
         method="POST",
         headers={"Content-type": "application/json", "timeout": "1200"},
