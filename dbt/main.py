@@ -24,7 +24,7 @@ ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
-with DAG('dbt_postgres', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
+with DAG('dbt', default_args=ARGS, schedule_interval=None, catchup=False) as dag:
 
     task_postgres_debug = BashOperator(
             task_id = 'dbt_postgres_debug',
