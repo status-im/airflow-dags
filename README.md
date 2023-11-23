@@ -11,31 +11,24 @@ To learn how to write DAGs and Operators read about [core concepts](https://airf
 
 This repository contains: 
 
-* DAG to launch the Airbyte jobs for the status-website charts, in `website-sync`,
-* DAG to launch the Airbyte jobs for the github sync of the different repositories of the org.
-* DAG to run all the dbt model in `dbt`,
-* DAG to sync data from spiff workflow.
+* `website_sync`: DAG to launch the Airbyte jobs for the status-website charts.
+* `spiff_sync`: DAG to synchronize Spiff workflows data
+* `dbt`: DAG to run all the dbt models,
+* `gh_sync`: DAG to synchronize data from repository (logos, waku, codex)
 
-
-## Development
-
-Each new models can be test on the `test` environment of [infra-bi](https://github.com/status-im/infra-bi) by merging it into the `test` branch of this repo. Once the tests are conclusive, the `test` branch can me merge into the `prod` one.
-
-
-# Examples
-
-Simple working DAGs taken from Airflow documentation:
-
-* [`bash_commands.py`](examples/bash_commands.py) - Use of `BashOperator` and simple layout.
-* [`task_decorator.py`](examples/task_decorator.py) - More complex layout with `DummyOperator`.
-* [`task_generator.py`](examples/task_generator.py) - Semi-dynamic way to generate tasks.
-* [`taskflow_api.py`](examples/taskflow_api.py) - `SimpleHttpOperator` and `EmailOperator`.
-
-These were researched in [infra-bi#1](https://github.com/status-im/infra-bi/issues/1). More examples are always welcome.
+> The DBT models run in some DAG are stored in [`dbt-models`](https://github.com/status-im/dbt-models).
 
 # Continuous Integration
 
 Changes pushed to `master` are automatically fetched to our Airflow instance by the [`airflow-webhook`](https://github.com/status-im/infra-bi/tree/master/ansible/roles/airflow-webhook) service.
+
+# Branches
+
+This repos has 3 working branches:
+
+* `prod`: used by https://airflow.bi.status.im.
+* `test`: used by https://airflow.test.bi.status.im to test DAGs modification.
+* `example`: contains examples of DAGs
 
 # Infrastructure
 
