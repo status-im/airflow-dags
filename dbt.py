@@ -1,5 +1,5 @@
 import sys
-import logging as LOG
+import logging
 from os import path
 from datetime import datetime, timedelta
 import sys
@@ -21,7 +21,7 @@ ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
-@dag('DBT models', default_args=ARGS, schedule_interval=None)
+@dag('dbt_models', default_args=ARGS, schedule_interval=None)
 def dbt_models():
     
     BashOperator(

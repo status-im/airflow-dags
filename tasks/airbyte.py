@@ -19,9 +19,19 @@ def extract_conn_id(output, connections):
         logging.info('%s has the id %s', c, id)
         ids[c]=id
     return ids
- 
 
-@task_group(group_id='my_task_group')
+@task(task_id="create_payload_soure_config")
+def create_payload_soure_config(config, source_name, source_id):
+    data={
+        "sourceId": f"{source_id}",
+        "connectionConfiguration": {
+            "wallets": config
+        },
+        "name": f"{source_name}"
+    }
+    Variable.set("wallet_config", json.dumps(data));
+
+@task_group(group_id='fetch_airbyte_connections_tg')
 def fetch_airbyte_connections_tg(connections):
     get_workflow_id = SimpleHttpOperator(
         task_id='get_workflow_id',
@@ -38,9 +48,9 @@ def fetch_airbyte_connections_tg(connections):
         endpoint='/api/v1/connections/list',
         method="POST",
         headers={"Content-type": "application/json", "timeout": "1200"},
-        data=json.dumps(
-            {"workspaceId": f"{get_workflow_id.output}"}
-            ),
+        data=json.dumps({
+            "workspaceId": f"{get_workflow_id.output}"
+        }),
         response_filter= lambda response: response.json()["connections"]
     )
 
@@ -52,3 +62,31 @@ def fetch_airbyte_connections_tg(connections):
     get_workflow_id >> get_connections >> connections_id
 
     return connections_id
+
+
+@task_group(group_id='update_airbyte_source_config_tg')
+def update_airbyte_source_config_tg(source_name, config):
+
+    get_sources_id = SimpleHttpOperator(
+        task_id='get_sources_id',
+        http_conn_id='airbyte_conn',
+        endpoint='/api/v1/sources/search',
+        method="POST",
+        headers={"Content-type": "application/json", "timeout": "1200"},
+        data=json.dumps({
+             "name": f"{source_name}"
+        }),
+        response_filter=lambda response: response.json()["sources"][0]['sourceId']
+    )
+    
+    source_config_payload = create_payload_soure_config(config, source_name, get_sources_id.output)
+
+    update_source_config = SimpleHttpOperator(
+        task_id='update_source_config',
+        http_conn_id='airbyte_conn',
+        endpoint='/api/v1/sources/update',
+        method="POST",
+        headers={"Content-type": "application/json", "timeout": "1200"},
+        data=Variable.get('wallet_config')
+    )
+    get_sources_id >> source_config_payload >> update_source_config
