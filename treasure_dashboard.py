@@ -32,7 +32,7 @@ ARGS = {
 }
 
 
-airbyte_connections=['blockchain-wallet-sync']
+airbyte_connections=['blockchain-wallet-sync', 'blockchain_market_extraction']
 
 @dag('treasure-dashboard-sync', schedule_interval='@daily', default_args=ARGS)
 def treasure_dashboard_sync():
@@ -58,6 +58,14 @@ def treasure_dashboard_sync():
         wait_seconds=3
     )
 
-    connections_id >> wallets_config >> update_airbyte_config >> fetch_wallet_data
+    fetch_market_data = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_blockchain_market',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['blockchain_market_extraction'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+
+    connections_id >> wallets_config >> update_airbyte_config >> fetch_wallet_data >> fetch_market_data
 
 treasure_dashboard_sync()
