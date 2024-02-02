@@ -7,6 +7,7 @@ import sys
 from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
 from airflow.operators.bash_operator import BashOperator
+from airflow.models.param import Param
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -38,3 +39,11 @@ def dbt_models():
     )
 
 dbt_models()
+
+@dag('dbt_select_models', params={ "model": Param("status_bi", type="string")} , default_args=ARGS,schedule_interval=None)
+def dbt_select_models():
+    BashOperator(
+       task_id='dbt_postgres_run',
+       bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models --select {{ params.model}}',
+    )
+dbt_select_models()
