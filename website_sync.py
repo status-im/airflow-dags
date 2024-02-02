@@ -53,7 +53,7 @@ def github_website_sync():
     # Launch DBT transformation on the data previously fetched
     BashOperator(
         task_id='dbt_postgres_run',
-        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/'
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select github'
     )
     # Trigger Airbyte Sync from main database to Hasura
     AirbyteTriggerSyncOperator(
