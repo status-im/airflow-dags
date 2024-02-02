@@ -34,7 +34,7 @@ def dbt_models():
     )
     BashOperator(
        task_id='dbt_postgres_run',
-       bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models'
+       bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models --select github'
     )
 
 dbt_models()
