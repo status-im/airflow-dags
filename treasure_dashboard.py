@@ -52,7 +52,10 @@ def treasure_dashboard_sync():
         response_filter=lambda response: response.json(),
     )
 
-    update_airbyte_config = update_airbyte_source_config_tg("Wallet fetcher", wallets_config.output)
+    update_airbyte_config = update_airbyte_source_config_tg(
+        "fin_dsh_wallet_fetcher", 
+        wallets_config.output
+    )
 
     fetch_wallet_data = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_blockchain_wallet',
