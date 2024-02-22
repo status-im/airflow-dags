@@ -45,47 +45,50 @@ airbyte_connections=[
 @dag(
     'logos_org_map', 
     default_args=ARGS, 
-    schedule_interval='30 */2 * * *'
+    # Run  every 4 hours
+    schedule_interval='0 */4  * * * '
 )
 def logos_org_map_sync():
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
 
     # Trigger Airbyte fetch Data from Github
-    AirbyteTriggerSyncOperator(
+    gh_sync_vac_repos = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_vac',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['gh_sync_vac_repos'],
         asynchronous=False,
         wait_seconds=3
     )
-    AirbyteTriggerSyncOperator(
+    gh_sync_logos_repos = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_logos',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['gh_sync_logos_repos'],
         asynchronous=False,
         wait_seconds=3
     )
-    AirbyteTriggerSyncOperator(
+    gh_sync_waku_repos=  AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_waku',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['gh_sync_waku_repos'],
         asynchronous=False,
         wait_seconds=3
     )
-    AirbyteTriggerSyncOperator(
+    gh_sync_codex_repos = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_codex',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['gh_sync_codex_repos'],
         asynchronous=False,
         wait_seconds=3
     )
+    # We don't call gh_sync_status_sync because data are already sync with `github_website_sync.py` DAG
+
     # Launch DBT transformation on the data previously fetched
-    BashOperator(
-        task_id='dbt_postgres_run',
-        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select project'
+    dbt_run = BashOperator(
+        task_id='dbt_run_models_projects',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select projects'
     )
     # Trigger Airbyte Sync from main database to Hasura
-    AirbyteTriggerSyncOperator(
+    load_hasura = AirbyteTriggerSyncOperator(
         task_id='airbyte_sync_hasura',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['load_hasura_logos_org_map'],
@@ -93,4 +96,5 @@ def logos_org_map_sync():
         wait_seconds=3
     )
 
+    connections_id >> [gh_sync_vac_repos, gh_sync_waku_repos, gh_sync_logos_repos, gh_sync_codex_repos ] >> dbt_run >> load_hasura
 logos_org_map_sync()
