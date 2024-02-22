@@ -37,12 +37,13 @@ airbyte_connections=['gh_sync_website_repos', 'load_hasura_website']
 
 @dag('github_website_sync', 
             default_args=ARGS, 
-            schedule_interval='15 */3 * * *')
+            # Run every 30 minutes
+            schedule_interval='*/30 * * * *')
 def github_website_sync():
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
 
     # Trigger Airbyte fetch Data from Github
-    AirbyteTriggerSyncOperator(
+    gh_sync_website_repos = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_github',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['gh_sync_website_repos'],
@@ -51,17 +52,19 @@ def github_website_sync():
     )
 
     # Launch DBT transformation on the data previously fetched
-    BashOperator(
-        task_id='dbt_postgres_run',
+    dbt_transform = BashOperator(
+        task_id='dbt_run_models_github',
         bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select github'
     )
     # Trigger Airbyte Sync from main database to Hasura
-    AirbyteTriggerSyncOperator(
+    load_hasura = AirbyteTriggerSyncOperator(
         task_id='airbyte_sync_hasura',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['load_hasura_website'],
         asynchronous=False,
         wait_seconds=3
     )
+
+    connections_id >> gh_sync_website_repos >> dbt_transform >> load_hasura
 
 github_website_sync()
