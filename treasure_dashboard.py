@@ -8,11 +8,11 @@ from airflow.models.param import Param
 
 from airflow.decorators import dag
 from airflow.providers.http.operators.http import SimpleHttpOperator
+from airflow.operators.bash_operator import BashOperator
 
 # HACK: Fix for loading relative modules.
 sys.path.append(path.dirname(path.realpath(__file__)))
 from tasks.airbyte import fetch_airbyte_connections_tg, update_airbyte_source_config_tg
-
 from providers.airbyte.operator import AirbyteTriggerSyncOperator
 
 """
@@ -80,6 +80,17 @@ def treasure_dashboard_sync():
         asynchronous=False,
         wait_seconds=3
     )
-    connections_id >> wallets_config >> update_airbyte_config >> fetch_wallet_data >> fetch_market_data >> fetch_bank_balance_data
+
+    dbt_run_blockchain = BashOperator(
+        task_id='dbt_run_models_blockchain',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select blochckain'
+    )
+
+    dbt_run_finance = BashOperator(
+        task_id='dbt_run_models_finance',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select finance'
+    )
+
+    connections_id >> wallets_config >> update_airbyte_config >> fetch_wallet_data >> fetch_market_data >> fetch_bank_balance_data >> dbt_run_blockchain >> dbt_run_finance 
 
 treasure_dashboard_sync()
