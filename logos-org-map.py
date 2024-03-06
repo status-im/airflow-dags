@@ -83,30 +83,7 @@ def logos_org_map_sync():
         asynchronous=False,
         wait_seconds=3
     )
-    # We don't call gh_sync_status_sync because data are already sync with `github_website_sync.py` DAG
-
-    # Trigger Airbyte fetch Data from Discourse 
-    disc_logos = AirbyteTriggerSyncOperator(
-        task_id='airbyte_fetch_disc_logos',
-        airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['disc_logos'],
-        asynchronous=False,
-        wait_seconds=3
-    )
-    disc_status = AirbyteTriggerSyncOperator(
-        task_id='airbyte_fetch_disc_status',
-        airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['disc_status'],
-        asynchronous=False,
-        wait_seconds=3
-    )
-    disc_vac = AirbyteTriggerSyncOperator(
-        task_id='airbyte_fetch_disc_vac',
-        airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['disc_vac'],
-        asynchronous=False,
-        wait_seconds=3
-    )
+    # We don't call gh_sync_status_sync because data are already sync with github_website_sync.py DAG
 
     # Launch DBT transformation on the data previously fetched
     dbt_run = BashOperator(
@@ -122,5 +99,6 @@ def logos_org_map_sync():
         wait_seconds=3
     )
 
-    connections_id >> [gh_sync_vac_repos, gh_sync_waku_repos, gh_sync_logos_repos, gh_sync_codex_repos, disc_logos, disc_vac, disc_status ] >> dbt_run >> load_hasura
+    connections_id >> [gh_sync_vac_repos, gh_sync_waku_repos, gh_sync_logos_repos, gh_sync_codex_repos] >> dbt_run >> load_hasura
+
 logos_org_map_sync()
