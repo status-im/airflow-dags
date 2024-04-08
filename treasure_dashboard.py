@@ -34,11 +34,12 @@ ARGS = {
 
 airbyte_connections = [
     'treasure-dsh-fetch-wallets-balance', 
-    'treasure-dsh-fetch-blockchain-market', 
-    'treasure-dsh-fetch-bank-balance'
+    'treasure-dsh-fetch-bank-balance',
+    'gs_xecurrency <> psql_data_warehouse_raw',
+    'gs_coins <> psql_data_warehouse_raw'
 ]
 
-@dag('treasure-dashboard-sync', schedule_interval='@daily', default_args=ARGS)
+@dag('treasure-dashboard-sync', schedule_interval='30 */1 * * *', default_args=ARGS)
 def treasure_dashboard_sync():
     
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
@@ -65,10 +66,10 @@ def treasure_dashboard_sync():
         wait_seconds=3
     )
 
-    fetch_market_data = AirbyteTriggerSyncOperator(
-        task_id='airbyte_fetch_blockchain_market',
+    fetch_xe_data = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_xe_data',
         airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['treasure-dsh-fetch-blockchain-market'],
+        connection_id=connections_id['gs_xecurrency <> psql_data_warehouse_raw'],
         asynchronous=False,
         wait_seconds=3
     )
@@ -77,6 +78,14 @@ def treasure_dashboard_sync():
         task_id='airbyte_fetch_bank_balance',
         airbyte_conn_id='airbyte_conn',
         connection_id=connections_id['treasure-dsh-fetch-bank-balance'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+
+    fetch_coingecko_data = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_coingecko_data',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['gs_coins <> psql_data_warehouse_raw'],
         asynchronous=False,
         wait_seconds=3
     )
@@ -91,6 +100,6 @@ def treasure_dashboard_sync():
         bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select finance'
     )
 
-    connections_id >> wallets_config >> update_airbyte_config >> fetch_wallet_data >> fetch_market_data >> fetch_bank_balance_data >> dbt_run_blockchain >> dbt_run_finance 
+    connections_id >> wallets_config >> update_airbyte_config >> fetch_wallet_data >> fetch_xe_data >> fetch_coingecko_data >> fetch_bank_balance_data >> dbt_run_blockchain >> dbt_run_finance 
 
 treasure_dashboard_sync()
