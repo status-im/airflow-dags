@@ -39,7 +39,7 @@ airbyte_connections = [
     'treasure-dsh-fetch-coingecko'
 ]
 
-@dag('treasure-dashboard-sync', schedule_interval='30 */1 * * *', default_args=ARGS)
+@dag('treasure-dashboard-sync', schedule_interval='0 */1 * * *', default_args=ARGS)
 def treasure_dashboard_sync():
     
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
