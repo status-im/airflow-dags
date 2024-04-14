@@ -35,8 +35,8 @@ ARGS = {
 airbyte_connections = [
     'treasure-dsh-fetch-wallets-balance', 
     'treasure-dsh-fetch-bank-balance',
-    'gs_xecurrency <> psql_data_warehouse_raw',
-    'gs_coins <> psql_data_warehouse_raw'
+    'treasure-dsh-fetch-xecurrencies',
+    'treasure-dsh-fetch-coingecko'
 ]
 
 @dag('treasure-dashboard-sync', schedule_interval='30 */1 * * *', default_args=ARGS)
@@ -69,7 +69,7 @@ def treasure_dashboard_sync():
     fetch_xe_data = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_xe_data',
         airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['gs_xecurrency <> psql_data_warehouse_raw'],
+        connection_id=connections_id['treasure-dsh-fetch-xecurrencies'],
         asynchronous=False,
         wait_seconds=3
     )
@@ -85,7 +85,7 @@ def treasure_dashboard_sync():
     fetch_coingecko_data = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_coingecko_data',
         airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['gs_coins <> psql_data_warehouse_raw'],
+        connection_id=connections_id['treasure-dsh-fetch-coingecko'],
         asynchronous=False,
         wait_seconds=3
     )
