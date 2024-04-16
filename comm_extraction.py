@@ -36,8 +36,23 @@ ARGS = {
 
 airbyte_connections=[
     'discord_fetcher',
-    'simplecast_fetch'
+    'simplecast_fetch',
+    'com_twitter_nomos_tech',
+    'com_twitter_acid_info',
+    'com_twitter_codex',
+    'com_twitter_ethstatus',
+    'com_twitter_logos',
+    'com_twitter_nimbus',
+    'com_twitter_waku',
 ]
+
+
+@task(task_id="wait_for_api")
+def wait_for_api():
+    # Twitter API limit number of call each 15 min
+    # https://developer.twitter.com/en/docs/twitter-api/tweets/lookup/api-reference/get-tweets#tab1
+    time.sleep(900)
+
 
 @dag(
     'comm_extraction', 
@@ -45,7 +60,7 @@ airbyte_connections=[
     # Run  every 4 hours
     schedule_interval='0 */24  * * * '
 )
-def forums_sync():
+def comm_extraction():
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
 
     # Trigger Airbyte fetch Data from Discourse 
@@ -63,7 +78,57 @@ def forums_sync():
         asynchronous=False,
         wait_seconds=3
     )
-    
-    connections_id >> [discord_fetcher, simplecast_fetch] 
+    twitter_acid_info = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_acid_info',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_acid_info'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+    twitter_nomos_tech = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_nomos_tech',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_nomos_tech'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+    twitter_codex = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_codex',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_codex'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+    twitter_logos = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_logos',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_logos'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+    twitter_ethstatus = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_ethstatus',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_ethstatus'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+    twitter_nimbus = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_nimbus',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_nimbus'],
+        asynchronous=False,
+        wait_seconds=3
+    )
+    twitter_waku = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_twitter_waku',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['com_twitter_waku'],
+        asynchronous=False,
+        wait_seconds=3
+    )
 
-forums_sync()
+    
+    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info >> wait_for_api >> twitter_nomos_tech >> wait_for_api >> twitter_codex >> wait_for_api >> twitter_ethstatus >> wait_for_api >> twitter_logos >> wait_for_api >> twitter_waku >> wait_for_api >> twitter_nimbus >> wait_for_api 
+
+comm_extraction()
