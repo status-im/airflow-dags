@@ -39,7 +39,7 @@ airbyte_connections = [
     'treasure-dsh-fetch-coingecko'
 ]
 
-@dag('treasure-dashboard-sync', schedule_interval='0 */1 * * *', default_args=ARGS)
+@dag('treasure-dashboard-sync', schedule_interval='0 0/6 * * *', default_args=ARGS)
 def treasure_dashboard_sync():
     
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
@@ -92,7 +92,7 @@ def treasure_dashboard_sync():
 
     dbt_run_blockchain = BashOperator(
         task_id='dbt_run_models_blockchain',
-        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select blochckain'
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select blockchain'
     )
 
     dbt_run_finance = BashOperator(
