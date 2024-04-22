@@ -2,14 +2,23 @@ import sys
 import logging
 from os import path
 from datetime import datetime, timedelta
-import sys
-
-from airflow.decorators import dag, task
-from airflow.operators.python import get_current_context
-from airflow.operators.bash_operator import BashOperator
+from airflow import DAG
+from airflow.models import Variable
 from airflow.models.param import Param
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+from airflow.decorators import dag
+from airflow.providers.http.operators.http import SimpleHttpOperator
+from airflow.operators.bash_operator import BashOperator
+
+# HACK: Fix for loading relative modules.
+sys.path.append(path.dirname(path.realpath(__file__)))
+from tasks.airbyte import fetch_airbyte_connections_tg, update_airbyte_source_config_tg
+from providers.airbyte.operator import AirbyteTriggerSyncOperator
+
+"""
+DAG to sync data for mod prod spiff environment
+"""
+logging.basicConfig(stream=sys.stdout, level=logging.info)
 
 ARGS = { 
     'owner': 'apentori',
@@ -22,28 +31,39 @@ ARGS = {
     'retry_delay': timedelta(minutes=10),
 }
 
-@dag('dbt_models', default_args=ARGS, schedule_interval=None)
-def dbt_models():
+
+airbyte_connections = [
+    'extract_spiff_backend_mod_prod', 
+    'extract_spiff_connector_mod_prod'
+]
+
+@dag('mod-prod-spiff-data-sync', schedule_interval='0 0/8 * * *', default_args=ARGS)
+def mod_prod_spiff_dashboard_sync():
     
-    BashOperator(
-        task_id = 'dbt_postgres_debug',
-        bash_command='dbt debug --profiles-dir /dbt --project-dir /dbt/dbt-models'
-    )
-    BashOperator(
-        task_id = 'dbt_postgres_test',
-        bash_command='dbt test --profiles-dir /dbt --project-dir /dbt/dbt-models'
-    )
-    BashOperator(
-       task_id='dbt_postgres_run',
-       bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models --select github'
+    connections_id=fetch_airbyte_connections_tg(airbyte_connections)
+
+
+    fetch_connector_prod_data = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_connector_prod',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['extract_spiff_connector_mod_prod'],
+        asynchronous=False,
+        wait_seconds=3
     )
 
-dbt_models()
-
-@dag('dbt_select_models', params={ "model": Param("status_bi", type="string")} , default_args=ARGS,schedule_interval=None)
-def dbt_select_models():
-    BashOperator(
-       task_id='dbt_postgres_run',
-       bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models --select {{ params.model}}',
+    fetch_bank_spiff_backend_prod_data = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_backend_prod',
+        airbyte_conn_id='airbyte_conn',
+        connection_id=connections_id['extract_spiff_backend_mod_prod'],
+        asynchronous=False,
+        wait_seconds=3
     )
-dbt_select_models()
+
+    dbt_run_prod_spiff = BashOperator(
+        task_id='dbt_run_models_prod_spiff',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select prod_spiff'
+    )
+
+    connections_id >> fetch_connector_prod_data >> fetch_bank_spiff_backend_prod_data >> dbt_run_prod_spiff 
+
+mod_prod_spiff_dashboard_sync()
