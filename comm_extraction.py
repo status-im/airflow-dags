@@ -129,6 +129,6 @@ def comm_extraction():
     )
 
     
-    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info >> wait_for_api >> twitter_nomos_tech >> wait_for_api >> twitter_codex >> wait_for_api >> twitter_ethstatus >> wait_for_api >> twitter_logos >> wait_for_api >> twitter_waku >> wait_for_api >> twitter_nimbus >> wait_for_api 
+    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info >> wait_for_api() >> twitter_nomos_tech >> wait_for_api() >> twitter_codex >> wait_for_api() >> twitter_ethstatus >> wait_for_api() >> twitter_logos >> wait_for_api() >> twitter_waku >> wait_for_api() >> twitter_nimbus >> wait_for_api()
 
 comm_extraction()
