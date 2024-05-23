@@ -52,7 +52,7 @@ def infra_sync():
 
     # Launch DBT transformation on the data previously fetched
     dbt_transform = BashOperator(
-        task_id='dbt_run_models_github',
+        task_id='dbt_run_models_infra',
         bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select infra'
     )
     connections_id >> gh_sync_victor_ops >> dbt_transform 
