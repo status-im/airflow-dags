@@ -128,7 +128,12 @@ def comm_extraction():
         wait_seconds=3
     )
 
+    dbt_run_socials = BashOperator(
+        task_id='dbt_run_models_social',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select social'
+    )
+
     
-    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info >> wait_for_api() >> twitter_nomos_tech >> wait_for_api() >> twitter_codex >> wait_for_api() >> twitter_ethstatus >> wait_for_api() >> twitter_logos >> wait_for_api() >> twitter_waku >> wait_for_api() >> twitter_nimbus >> wait_for_api()
+    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info >> wait_for_api() >> twitter_nomos_tech >> wait_for_api() >> twitter_codex >> wait_for_api() >> twitter_ethstatus >> wait_for_api() >> twitter_logos >> wait_for_api() >> twitter_waku >> wait_for_api() >> twitter_nimbus >> wait_for_api() >> dbt_run_socials
 
 comm_extraction()

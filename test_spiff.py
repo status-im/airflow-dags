@@ -21,10 +21,10 @@ DAG to sync data for mod prod spiff environment
 logging.basicConfig(stream=sys.stdout, level=logging.info)
 
 ARGS = { 
-    'owner': 'apentori',
+    'owner': 'lanaya',
     'depends_on_past': False,
     'start_date': datetime(2023,6,1),
-    'email': ['alexis@status.im'],
+    'email': ['lalo@status.im'],
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 0,
@@ -33,37 +33,37 @@ ARGS = {
 
 
 airbyte_connections = [
-    'extract_spiff_backend_mod_prod', 
-    'extract_spiff_connector_mod_prod'
+    'extract_spiff_backend_app_test', 
+    'extract_spiff_connector_app_test'
 ]
 
-@dag('mod-prod-spiff-data-sync', schedule_interval='0 0/8 * * *', default_args=ARGS)
-def mod_prod_spiff_dashboard_sync():
+@dag('app-test-spiff-data-sync', schedule_interval='0 0/12 * * *', default_args=ARGS)
+def app_test_spiff_dashboard_sync():
     
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
 
 
-    fetch_connector_prod_data = AirbyteTriggerSyncOperator(
-        task_id='airbyte_fetch_connector_prod',
+    fetch_connector_test_data = AirbyteTriggerSyncOperator(
+        task_id='extract_spiff_connector_app_test',
         airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['extract_spiff_connector_mod_prod'],
+        connection_id=connections_id['extract_spiff_connector_app_test'],
         asynchronous=False,
         wait_seconds=3
     )
 
-    fetch_bank_spiff_backend_prod_data = AirbyteTriggerSyncOperator(
-        task_id='airbyte_fetch_backend_prod',
+    fetch_bank_spiff_backend_test_data = AirbyteTriggerSyncOperator(
+        task_id='airbyte_fetch_backend_test',
         airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['extract_spiff_backend_mod_prod'],
+        connection_id=connections_id['extract_spiff_backend_app_test'],
         asynchronous=False,
         wait_seconds=3
     )
 
-    dbt_run_prod_spiff = BashOperator(
-        task_id='dbt_run_models_prod_spiff',
-        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select prod_spiff'
+    dbt_run_test_spiff = BashOperator(
+        task_id='dbt_run_models_test_spiff',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select test_spiff'
     )
 
-    connections_id >> fetch_connector_prod_data >> fetch_bank_spiff_backend_prod_data >> dbt_run_prod_spiff 
+    connections_id >> fetch_connector_test_data >> fetch_bank_spiff_backend_test_data >> dbt_run_test_spiff 
 
-mod_prod_spiff_dashboard_sync()
+app_test_spiff_dashboard_sync()
