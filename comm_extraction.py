@@ -3,7 +3,7 @@ import json
 from os import path
 from datetime import datetime, timedelta
 import logging
-
+import time
 from airflow import DAG
 from airflow.decorators import dag, task
 from airflow.operators.python import get_current_context
@@ -38,12 +38,12 @@ airbyte_connections=[
     'discord_fetcher',
     'simplecast_fetch',
     'com_twitter_nomos_tech',
-    'com_twitter_acid_info',
+    'com_twitter_ac1d_info',
     'com_twitter_codex',
     'com_twitter_ethstatus',
     'com_twitter_logos',
     'com_twitter_nimbus',
-    'com_twitter_waku',
+    'com_twitter_waku'
 ]
 
 
@@ -81,7 +81,7 @@ def comm_extraction():
     twitter_acid_info = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_twitter_acid_info',
         airbyte_conn_id='airbyte_conn',
-        connection_id=connections_id['com_twitter_acid_info'],
+        connection_id=connections_id['com_twitter_ac1d_info'],
         asynchronous=False,
         wait_seconds=3
     )
