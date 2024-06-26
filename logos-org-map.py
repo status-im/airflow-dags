@@ -39,9 +39,6 @@ airbyte_connections=[
     'gh_sync_logos_repos',
     'gh_sync_waku_repos',
     'gh_sync_codex_repos',
-    'disc_logos',
-    'disc_vac',
-    'disc_status',
     'load_hasura_logos_org_map'
 ]
 
