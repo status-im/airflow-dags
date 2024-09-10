@@ -43,7 +43,9 @@ airbyte_connections=[
     'com_twitter_ethstatus',
     'com_twitter_logos',
     'com_twitter_nimbus',
-    'com_twitter_waku'
+    'com_twitter_waku',
+    'com_twitter_exit_operator',
+    'com_twitter_institute_ft'
 ]
 
 
@@ -103,6 +105,10 @@ def comm_extraction():
     twitter_nimbus = fetch_twitter_info(connections_id['com_twitter_nimbus'], 'nimbus')
     
     twitter_waku =  fetch_twitter_info(connections_id['com_twitter_waku'], 'waku')
+    
+    twitter_exit_operator =  fetch_twitter_info(connections_id['com_twitter_exit_operator'], 'exit_operator')
+    
+    twitter_institute_ft =  fetch_twitter_info(connections_id['com_twitter_institute_ft'], 'institute_ft')
 
     dbt_run_socials = BashOperator(
         task_id='dbt_run_models_social',
@@ -110,6 +116,6 @@ def comm_extraction():
     )
 
     # Twitter connections have to be sequentially run to avoid API Rate Limits
-    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info  >> twitter_nomos_tech  >> twitter_codex  >> twitter_ethstatus  >> twitter_logos  >> twitter_waku  >> twitter_nimbus  >> dbt_run_socials
+    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info  >> twitter_nomos_tech  >> twitter_codex  >> twitter_ethstatus  >> twitter_logos  >> twitter_waku  >> twitter_nimbus >> twitter_exit_operator >> twitter_institute_ft  >> dbt_run_socials
 
 comm_extraction()
