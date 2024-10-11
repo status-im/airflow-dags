@@ -22,7 +22,7 @@ DAG to sync data from the Discourse forums used accros the org
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-ARGS = { 
+ARGS = {
     'owner': 'apentori',
     'depends_on_past': False,
     'start_date': datetime(2024,2,20),
@@ -55,15 +55,15 @@ def wait_for_api():
 
 
 @dag(
-    'comm_extraction', 
-    default_args=ARGS, 
+    'comm_extraction',
+    default_args=ARGS,
     # Run  every 4 hours
     schedule_interval='0 */24  * * * '
 )
 def comm_extraction():
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
 
-    # Trigger Airbyte fetch Data from Discourse 
+    # Trigger Airbyte fetch Data from Discourse
     discord_fetcher = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_discord',
         airbyte_conn_id='airbyte_conn',
