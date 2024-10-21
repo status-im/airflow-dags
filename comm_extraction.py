@@ -17,12 +17,12 @@ from tasks.airbyte import fetch_airbyte_connections_tg
 from providers.airbyte.operator import AirbyteTriggerSyncOperator
 
 """
-DAG to sync data from the Discourse forums used accros the org 
+DAG to sync data from the Discourse forums used accros the org
 """
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-ARGS = { 
+ARGS = {
     'owner': 'apentori',
     'depends_on_past': False,
     'start_date': datetime(2024,2,20),
@@ -37,15 +37,13 @@ ARGS = {
 airbyte_connections=[
     'discord_fetcher',
     'simplecast_fetch',
-    'com_twitter_nomos_tech',
-    'com_twitter_ac1d_info',
-    'com_twitter_codex',
-    'com_twitter_ethstatus',
-    'com_twitter_logos',
-    'com_twitter_nimbus',
-    'com_twitter_waku',
-    'com_twitter_exit_operator',
-    'com_twitter_institute_ft'
+    'twitter-nomos',
+    'twitter-codex',
+    'twitter-logos',
+    'twitter-nimbus',
+    'twitter-waku',
+    'twitter-vac',
+    'twitter-keycard',
 ]
 
 
@@ -67,16 +65,16 @@ def fetch_twitter_info(connection_id, airb_conn_name):
         trigger_rule="all_done"
     )
     twitter_fetch >> wait_for_api()
- 
+
 @dag(
-    'comm_extraction', 
-    default_args=ARGS, 
-    schedule_interval='0 */24  * * * '
+    'comm_extraction',
+    default_args=ARGS,
+    schedule_interval='0 */24 * * * '
 )
 def comm_extraction():
     connections_id=fetch_airbyte_connections_tg(airbyte_connections)
 
-    # Trigger Airbyte fetch Data from Discourse 
+    # Trigger Airbyte fetch Data from Discourse
     discord_fetcher = AirbyteTriggerSyncOperator(
         task_id='airbyte_fetch_discord',
         airbyte_conn_id='airbyte_conn',
@@ -92,23 +90,23 @@ def comm_extraction():
         wait_seconds=3
     )
 
-    twitter_acid_info = fetch_twitter_info(connections_id['com_twitter_ac1d_info'], 'acid_info')
-    
-    twitter_nomos_tech = fetch_twitter_info(connections_id['com_twitter_nomos_tech'], 'nomos')
-     
-    twitter_codex = fetch_twitter_info(connections_id['com_twitter_codex'], 'codex')
+    #twitter_acid_info = fetch_twitter_info(connections_id['twitter-acid'], 'acid_info')
 
-    twitter_logos = fetch_twitter_info(connections_id['com_twitter_logos'], 'logos')
+    twitter_nomos_tech = fetch_twitter_info(connections_id['twitter-nomos'], 'nomos')
 
-    twitter_ethstatus = fetch_twitter_info(connections_id['com_twitter_ethstatus'], 'status')
-    
-    twitter_nimbus = fetch_twitter_info(connections_id['com_twitter_nimbus'], 'nimbus')
-    
-    twitter_waku =  fetch_twitter_info(connections_id['com_twitter_waku'], 'waku')
-    
-    twitter_exit_operator =  fetch_twitter_info(connections_id['com_twitter_exit_operator'], 'exit_operator')
-    
-    twitter_institute_ft =  fetch_twitter_info(connections_id['com_twitter_institute_ft'], 'institute_ft')
+    twitter_codex = fetch_twitter_info(connections_id['twitter-codex'], 'codex')
+
+    twitter_logos = fetch_twitter_info(connections_id['twitter-logos'], 'logos')
+
+   # twitter_status = fetch_twitter_info(connections_id['twitter-status'], 'status')
+
+    twitter_nimbus = fetch_twitter_info(connections_id['twitter-nimbus'], 'nimbus')
+
+    twitter_waku = fetch_twitter_info(connections_id['twitter-waku'], 'waku')
+
+    twitter_vac = fetch_twitter_info(connections_id['twitter-vac'], 'vac')
+
+    twitter_keycard = fetch_twitter_info(connections_id['twitter-keycard'], 'keycard')
 
     dbt_run_socials = BashOperator(
         task_id='dbt_run_models_social',
@@ -116,6 +114,7 @@ def comm_extraction():
     )
 
     # Twitter connections have to be sequentially run to avoid API Rate Limits
-    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_acid_info  >> twitter_nomos_tech  >> twitter_codex  >> twitter_ethstatus  >> twitter_logos  >> twitter_waku  >> twitter_nimbus >> twitter_exit_operator >> twitter_institute_ft  >> dbt_run_socials
+    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_nomos_tech >> twitter_codex >> twitter_logos >> twitter_waku >> twitter_nimbus >> twitter_vac >> twitter_keycard >> dbt_run_socials
+
 
 comm_extraction()
