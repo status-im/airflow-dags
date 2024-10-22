@@ -112,9 +112,13 @@ def comm_extraction():
         task_id='dbt_run_models_social',
         bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select social'
     )
+    dbt_run_twitter = BashOperator(
+        task_id='dbt_run_models_twitter',
+        bash_command='dbt run --profiles-dir /dbt --project-dir /dbt/dbt-models/ --select twitter'
+    )
 
     # Twitter connections have to be sequentially run to avoid API Rate Limits
-    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_nomos_tech >> twitter_codex >> twitter_logos >> twitter_waku >> twitter_nimbus >> twitter_vac >> twitter_keycard >> dbt_run_socials
+    connections_id >> [discord_fetcher, simplecast_fetch] >> twitter_nomos_tech >> twitter_codex >> twitter_logos >> twitter_waku >> twitter_nimbus >> twitter_vac >> twitter_keycard >> dbt_run_socials >> dbt_run_twitter
 
 
 comm_extraction()
